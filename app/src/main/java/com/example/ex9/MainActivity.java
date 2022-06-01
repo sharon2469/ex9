@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -15,13 +16,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int RECEIVE_SMS_REQUEST_CODE   = 1;
     private static final int READ_SMS_REQUEST_CODE      = 2;
 
+    private BroadcastReceiver br = new NetworkReceiver();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // This two function will call each time when MainActivity will create
         askForSmsDangerousPermissions();
-
         registerNetworkReceiver();
 
 
@@ -29,8 +32,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerNetworkReceiver() {
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(new NetworkReceiver(), filter, Manifest.permission.ACCESS_NETWORK_STATE, null);
+        registerReceiver(br, filter, Manifest.permission.ACCESS_NETWORK_STATE, null);
     }
+
+    @Override
+    protected void onDestroy () {
+        super.onDestroy();
+        unregisterReceiver(br);
+    }
+
 
     private void askForSmsDangerousPermissions() {
         requestSmsDangerousPermission(Manifest.permission.READ_SMS, READ_SMS_REQUEST_CODE);
